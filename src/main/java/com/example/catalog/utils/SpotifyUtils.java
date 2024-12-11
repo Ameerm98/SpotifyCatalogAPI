@@ -31,7 +31,10 @@ public class SpotifyUtils {
      * @return true if the string is a valid Spotify ID, false otherwise.
      */
     public static boolean isValidId(String id) {
-        return true;
+        if(id == null || id.isEmpty() || id.length()<15 || id.length()>30){
+            return false;
+        }
+        return id.matches("[0-9a-zA-Z]*");
     }
 
     /**

@@ -3,12 +3,10 @@ package com.example.catalog;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import static com.example.catalog.utils.SpotifyUtils.isValidId;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static com.example.catalog.utils.SpotifyUtils.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
-@Disabled("Should be enabled for Junit exercises")
 public class SpotifyUtilsTest {
 
     @Test
@@ -19,11 +17,40 @@ public class SpotifyUtilsTest {
     }
 
     @Test
+    public void testValidURI(){
+        assertTrue(isValidURI("spotify:artist:ameermasarwa1998"));
+        assertTrue(isValidURI("spotify:track:sweetmoments20002207"));
+        assertTrue(isValidURI("spotify:playlist:sweetmoments20002207"));
+        assertTrue(isValidURI("spotify:album:sweetmoments20002207"));
+        assertFalse(isValidURI("spotify:artist:ameerm1998"));
+        assertFalse(isValidURI("spotify:track"));
+        assertFalse(isValidURI("spotify:sweetmoments20002207"));
+        assertFalse(isValidURI("album:sweetmoments20002207"));
+
+    }
+
+    @Test
+    public void testSpotifyClient(){
+        assertThrows(IllegalArgumentException.class,()->{
+            getSpotifyClient("","ab");
+        });
+        assertThrows(IllegalArgumentException.class,()->{
+            getSpotifyClient("ab","");
+        });
+        assertThrows(UnsupportedOperationException.class,()->{
+            getSpotifyClient("ameer","masarwa");
+        });
+
+
+
+
+    }
+    @Test
     public void testInvalidId() {
         assertFalse(isValidId(null)); // null ID
         assertFalse(isValidId("")); // empty ID
         assertFalse(isValidId("shortID")); // too short ID (less than 15 characters)
-        assertFalse(isValidId("thisIDiswaytoolongtobevalid")); // too long ID (more than 30 characters)
+        assertFalse(isValidId("thisIDiswaytoolongtobevalidddddd")); // too long ID (more than 30 characters)
         assertFalse(isValidId("!@#$$%^&*()_+")); // invalid characters
         assertFalse(isValidId("1234567890abcdefGHIJKLMNO!@#")); // includes invalid characters
     }

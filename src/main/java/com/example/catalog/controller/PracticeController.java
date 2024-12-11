@@ -47,10 +47,16 @@ public class PracticeController {
         ClassPathResource resource = new ClassPathResource("data/popular_songs.json");
         JsonNode songsNode = objectMapper.readTree(resource.getFile());
         List<Map<String, Object>> songsList = objectMapper.convertValue(songsNode, List.class);
+        Map<String, Object> mx = songsList.get(0);
+        for(Map<String, Object> elm:songsList){
+           if ((int)elm.get("popularity") > ((int)mx.get("popularity"))){
+               mx = elm;
+            }
+
+        }
 
 
-
-        return songsList.get(0);  // TODO return the song with the highest popularity
+        return mx;  // TODO return the song with the highest popularity
     }
 
 }
