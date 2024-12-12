@@ -111,10 +111,8 @@ class LRUCacheTest {
             @Test
             @DisplayName("evicts the least recently used element when the cache exceeds its capacity")
             void evictsLeastUsedElement(){
-                cache.get("Mahmoud");
-                cache.get("Malik");
                 cache.set("Karam","Atamnh");
-                assertThrows(NullPointerException.class,()->{cache.get("Fade");});
+                assertEquals(null,cache.get("Mahmoud"));
             }
 
 
@@ -135,9 +133,9 @@ class LRUCacheTest {
                 @DisplayName("added elements are not accesible")
                 void noAccesibleElements(){
                     // TODO assert cache is empty
-                    assertThrows(NullPointerException.class,()->{cache.get("Fade");});
-                    assertThrows(NullPointerException.class,()->{cache.get("Ameer");});
-                    assertThrows(NullPointerException.class,()->{cache.get("Malik");});
+                    assertEquals(null,cache.get("aws"));
+                    assertEquals(null,cache.get("fade"));
+                    assertEquals(null,cache.get("ameer"));
                 }
                 @BeforeEach
                 void clearCache() {
@@ -155,15 +153,17 @@ class LRUCacheTest {
                 cache.set("Mahmoud","Masarwa");
                 cache.set("Malik","Atamnh");
                 cache.set("Aws","Masarwa");
+                assertEquals(3, cache.size());
             }
 
             @Test
             @DisplayName("evicts only the least recently used element when capacity is exceeded repeatedly")
             void evictsOnlyLeastRecentlyUsedElement(){
-                cache.get("Mahmoud");
-                cache.get("Malik");
-                cache.set("Karam","Atamna");
-                assertThrows(NullPointerException.class,()->{cache.get("Aws");});
+                cache.set("Mahmoud","Masarwa");
+                cache.set("Malik","Atamnh");
+                cache.set("Aws","Masarwa");
+                cache.set("Fade","Masarwa");
+                assertEquals(null,cache.get("Mahmoud"));
             }
         }
     }
