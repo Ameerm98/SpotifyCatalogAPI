@@ -30,8 +30,8 @@ public class CatalogController {
             return new ResponseEntity<>(objectMapper.readTree(resource.getFile()),HttpStatus.OK);
         }catch (Exception e){
             ObjectNode errResopnseMod = objectMapper.createObjectNode();
-            errResopnseMod.put("message","internal error");
             errResopnseMod.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+            errResopnseMod.put("message","internal error");
             return new ResponseEntity<>(errResopnseMod,HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -42,8 +42,8 @@ public class CatalogController {
             return new ResponseEntity<>(objectMapper.readTree(resource.getFile()),HttpStatus.OK);
         } catch (Exception e) {
             ObjectNode errResopnseMod = objectMapper.createObjectNode();
-            errResopnseMod.put("message","internal error");
             errResopnseMod.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+            errResopnseMod.put("message","internal error");
             return new ResponseEntity<>(errResopnseMod,HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -53,14 +53,14 @@ public class CatalogController {
         try {
             if(id.matches("0+")){
                 ObjectNode errResopnseMod = objectMapper.createObjectNode();
-                errResopnseMod.put("message","forbidden id");
                 errResopnseMod.put("status", HttpStatus.FORBIDDEN.value());
+                errResopnseMod.put("message","forbidden id");
                 return new ResponseEntity<>(errResopnseMod,HttpStatus.FORBIDDEN);
             }
             if (! SpotifyUtils.isValidId(id)) {
                 ObjectNode errResopnseMod = objectMapper.createObjectNode();
-                errResopnseMod.put("message","invalid id");
                 errResopnseMod.put("status", HttpStatus.BAD_REQUEST.value());
+                errResopnseMod.put("message","invalid id");
                 return new ResponseEntity<>(errResopnseMod,HttpStatus.BAD_REQUEST);
             }
             JsonNode albumsaved = cache.get(id);
@@ -75,14 +75,14 @@ public class CatalogController {
                 return new ResponseEntity<>(album,HttpStatus.OK);
             } else {
                 ObjectNode errResopnseMod = objectMapper.createObjectNode();
-                errResopnseMod.put("message","Album not found");
                 errResopnseMod.put("status", HttpStatus.NOT_FOUND.value());
+                errResopnseMod.put("message","Album not found");
                 return new ResponseEntity<>(errResopnseMod,HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
             ObjectNode errResopnseMod = objectMapper.createObjectNode();
-            errResopnseMod.put("message","internal error");
             errResopnseMod.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+            errResopnseMod.put("message","internal error");
             return new ResponseEntity<>(errResopnseMod,HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
