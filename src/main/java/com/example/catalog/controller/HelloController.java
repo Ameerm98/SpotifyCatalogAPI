@@ -12,4 +12,9 @@ public class HelloController {
         return "Hello from API! There is no UI here...";
     }
 
+    @GetMapping("/internal")
+    public void internalRequests(){
+        return;
+    }
+
 }
