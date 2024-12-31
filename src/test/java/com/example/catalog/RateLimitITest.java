@@ -44,7 +44,6 @@ public class RateLimitITest {
     @Test
     public void testRateLimiterBypassesInternalEndpoint() {
         int totalRequests = 15;
-
         for (int i = 0; i < totalRequests; i++) {
             ResponseEntity<String> response = restTemplate.getForEntity(INTERNAL_ENDPOINT, String.class);
             assertTrue(response.getStatusCode().equals(HttpStatusCode.valueOf(200)));

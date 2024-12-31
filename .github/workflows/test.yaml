@@ -1,0 +1,24 @@
+name: SpotifyCatalogAPI tests
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  Test:
+    needs: PreTestListKatas
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 23
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '23'
+
+      - name: Run Tests
+        run: |
+          mvn test
