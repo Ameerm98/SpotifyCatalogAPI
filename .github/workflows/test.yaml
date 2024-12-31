@@ -18,11 +18,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Pre-test preparation
-        run: |
-          echo "Running pre-test tasks"
-          # Add any pre-test steps here
-
   Test:
     needs: PreTestListKatas
     runs-on: ubuntu-latest
