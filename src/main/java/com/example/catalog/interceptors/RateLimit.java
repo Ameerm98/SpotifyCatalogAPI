@@ -33,56 +33,66 @@ public class RateLimit implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String clientIp = request.getRemoteAddr();
         long currentTime = System.currentTimeMillis();
-        //String res = request.getContextPath();
         if (Objects.equals(request.getRequestURI(), "/internal")){
             return true;
         }
-
-        return isAllowed(clientIp,response,currentTime);
+        if (!isAllowed(clientIp,response,currentTime)){
+            response.setHeader("X-Rate-Limit-Remaining", "0");
+            if (Objects.equals(rateLimitAlgo, "fixed")){
+                Interval interval = clientsrequests.get(clientIp);
+                response.setHeader("X-Rate-Limit-Retry-After-Seconds", Long.toString(1+(timeWindowsmillis-(currentTime-interval.timeCreated)) / 1000));
+            }else{
+                CircularBuffer slideWindow = clientsrequestsmoving.get(clientIp);
+                long oldestRequestTime = slideWindow.peek();
+                response.setHeader("X-Rate-Limit-Retry-After-Seconds", Long.toString(1+(timeWindowsmillis-(currentTime-oldestRequestTime)) / 1000));
+            }
+            return false;
+        }
+        if (Objects.equals(rateLimitAlgo, "fixed")){
+            Interval interval = clientsrequests.get(clientIp);
+            response.setHeader("X-Rate-Limit-Remaining", Integer.toString(Integer.parseInt(rateLimitRPM)-interval.requestCount));
+        }else {
+            CircularBuffer slideWindow = clientsrequestsmoving.get(clientIp);
+            while((currentTime-slideWindow.peek())>timeWindowsmillis){
+                slideWindow.remove();
+            }
+            response.setHeader("X-Rate-Limit-Remaining", Integer.toString(slideWindow.capacity-slideWindow.size));
+        }
+        return true;
     }
     private boolean isAllowed(String clientIp,HttpServletResponse response,long currentTime) {
-        // TODO your implementation ...
         if (Objects.equals(rateLimitAlgo, "fixed")) {
-            Interval interval = clientsrequests.computeIfAbsent(clientIp, k -> new Interval(0, 0));
+            Interval interval = clientsrequests.computeIfAbsent(clientIp, k -> new Interval(0,currentTime, 0));
             synchronized (interval) {
                 long currentInterval = (currentTime-interval.timeCreated) / timeWindowsmillis;
                 if (interval.intervalNum != currentInterval) {
+                    long diff = currentInterval-interval.intervalNum;
                     interval.intervalNum = currentInterval;
-                    while (currentTime-interval.timeCreated>timeWindowsmillis){
-                        interval.timeCreated+=timeWindowsmillis;
-                    }
+                    interval.timeCreated+=(timeWindowsmillis*diff);
                     interval.requestCount = 0;
                 }
                 if (interval.requestCount < Integer.parseInt(rateLimitRPM)) {
                     interval.requestCount += 1;
-                    response.setHeader("X-Rate-Limit-Remaining", Integer.toString(Integer.parseInt(rateLimitRPM)-interval.requestCount));
                     return true;
                 } else {
                     response.setStatus(429);
-                    response.setHeader("X-Rate-Limit-Remaining", Integer.toString(0));
-                    response.setHeader("X-Rate-Limit-Retry-After-Seconds", Long.toString((timeWindowsmillis-(currentTime-interval.timeCreated)) / 1000));
                     return false;
                 }
-
             }
         } else {
             CircularBuffer slideWindow = clientsrequestsmoving.computeIfAbsent(clientIp,k -> new CircularBuffer(Integer.parseInt(rateLimitRPM)));
             synchronized (slideWindow){
-                long oldestRequestTime = slideWindow.peek();
-                if (slideWindow.size<slideWindow.capacity || (currentTime-oldestRequestTime>timeWindowsmillis)){
+                if (slideWindow.size<slideWindow.capacity || (currentTime- slideWindow.peek()>timeWindowsmillis)){
                     slideWindow.add(currentTime);
-                    response.setHeader("X-Rate-Limit-Remaining", Integer.toString(slideWindow.capacity-slideWindow.size));
                     return true;
-
                 }else {
                     response.setStatus(429);
-                    response.setHeader("X-Rate-Limit-Remaining", Integer.toString(0));
-                    response.setHeader("X-Rate-Limit-Retry-After-Seconds", Long.toString((timeWindowsmillis-(currentTime-oldestRequestTime)) / 1000));
                     return false;
                 }
             }
         }
     }
+
     public static class CircularBuffer {
         private final long[] buffer;
         private final int capacity;
@@ -153,9 +163,9 @@ public class RateLimit implements HandlerInterceptor {
         long timeCreated;
         int requestCount;
 
-        Interval(long statTime,int requestCount){
-            this.intervalNum = statTime;
-            this.timeCreated = System.currentTimeMillis();
+        Interval(long startInterval,long time,int requestCount){
+            this.intervalNum = startInterval;
+            this.timeCreated = time;
             this.requestCount = requestCount;
 
 

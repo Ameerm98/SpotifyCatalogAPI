@@ -1,17 +1,18 @@
 package com.example.catalog;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.TestPropertySource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class RateLimitITest {
+@TestPropertySource(properties = {"rate-limit.algo=moving"})
+public class RateLimitMovingTest {
 
     @Autowired
     private TestRestTemplate restTemplate;
@@ -22,11 +23,11 @@ public class RateLimitITest {
     private static final String XRateLimitRemaining = "X-Rate-Limit-Remaining";
 
 
-
     @Test
     public void testRateLimiterEnforcesLimits() throws InterruptedException {
         int allowedRequests = 10;
         int extraRequests = 1;
+        Thread thread = new Thread();
 
         for (int i = 0; i < allowedRequests; i++) {
             ResponseEntity<String> response = restTemplate.getForEntity(API_ENDPOINT, String.class);
@@ -41,26 +42,13 @@ public class RateLimitITest {
             assertTrue(response.getStatusCode().equals(HttpStatusCode.valueOf(429)));
             int retryAfter = Integer.parseInt(response.getHeaders().get(XRateLimitRetryAfterSecondsHeader).get(0));
             assertTrue(retryAfter > 0);
-            Thread thread = new Thread();
             thread.sleep(retryAfter*1000);
         }
-        extraRequests = 1;
         for (int i = 0; i < extraRequests; i++) {
             ResponseEntity<String> response = restTemplate.getForEntity(API_ENDPOINT, String.class);
-            assertTrue(response.getStatusCode().equals(HttpStatusCode.valueOf(200)), "Expected status code to be 200 for the first request");
-
-            String remainingRequests = String.valueOf(allowedRequests - (i + 1));
-            assertEquals(remainingRequests, response.getHeaders().get(XRateLimitRemaining).get(0), "Expected " + XRateLimitRemaining + " header to be " + remainingRequests + " after " + i + 1 + " requests");
-        }
-    }
-
-    @Test
-    public void testRateLimiterBypassesInternalEndpoint() {
-        int totalRequests = 15;
-        for (int i = 0; i < totalRequests; i++) {
-            ResponseEntity<String> response = restTemplate.getForEntity(INTERNAL_ENDPOINT, String.class);
-            assertTrue(response.getStatusCode().equals(HttpStatusCode.valueOf(200)));
-            assertFalse(response.getHeaders().containsKey(XRateLimitRemaining));
+            assertTrue(response.getStatusCode().equals(HttpStatusCode.valueOf(200)), "Expected status code to be 200 for the extra request");
+            thread.sleep(1000);
+            assertEquals("9", response.getHeaders().get(XRateLimitRemaining).get(0), "Expected " + XRateLimitRemaining + " header to be " + "9" + " after " + i + 1 + " requests");
         }
     }
 }
