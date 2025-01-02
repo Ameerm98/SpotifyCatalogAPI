@@ -33,6 +33,9 @@ public class CatalogController {
         ClassPathResource resource = new ClassPathResource("data/popular_songs.json");
         JsonNode songs = objectMapper.readTree(resource.getFile());
 
+        if (offset==0 && limit==-1){
+            limit =songs.size();
+        }
         List<JsonNode> songsList = new ArrayList<>();
         int i =0;
         int count = limit;
@@ -45,7 +48,9 @@ public class CatalogController {
         }
         return ResponseEntity.ok(songsList);
     }
-    /*
+
+
+/*
     @GetMapping("/popularSongs")
     public ResponseEntity<JsonNode> getPopularSongs() throws IOException {
         try {
@@ -59,8 +64,9 @@ public class CatalogController {
             return new ResponseEntity<>(errResopnseMod,HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    */
 
-     */
+
     @GetMapping("/popularArtists")
     public ResponseEntity<JsonNode> getPopularArtists() throws IOException {
         try {
