@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: Build
     env:
-      SPOTIFY_TESTING_REPO_NAME: SpotifyTesting
+      SPOTIFY_TESTING_REPO_NAME: Ameerm98/SpotifyTesting
       UI_TESTING_WORKFLOW_ID: ui_testing.yaml
     steps:
       - name: Trigger the Selenium testing workflow
