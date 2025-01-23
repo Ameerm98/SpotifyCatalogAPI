@@ -37,7 +37,7 @@ jobs:
           
 
   CheckstyleTest:
-    needs: CheckstyleTest
+    name: CheckstyleTest
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
