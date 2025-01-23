@@ -1,12 +1,10 @@
 name: SpotifyCatalogAPI tests
 
 on:
-  workflow_dispatch:
-    inputs:
-      checkstyle:
-        description: 'checkstyle'
-        required: false
-        type: boolean
+  pull_request:
+    branches:
+      - main
+
 
 
 jobs:
@@ -58,7 +56,6 @@ jobs:
   CheckstyleTest:
     name: CheckstyleTest
     runs-on: ubuntu-latest
-    if: ${{ github.event.inputs.checkstyle == 'true' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
