@@ -1,25 +1,12 @@
 name: SpotifyCatalogAPI tests
 
 on:
-  push:
+  pull_request:
     branches:
       - main
 
 jobs:
-  PreTestListKatas:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
   Test:
-    needs: PreTestListKatas
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -33,4 +20,39 @@ jobs:
 
       - name: Run Tests
         run: |
-          mvn test
+          mvn test -q
+
+  TriggerDeployment:
+    runs-on: ubuntu-latest
+    env:
+      SPOTIFY_TESTING_REPO_NAME: Ameerm98/SpotifyTesting
+      UI_TESTING_WORKFLOW_ID: ui_testing.yaml
+    steps:
+      - name: Trigger the Selenium testing workflow
+        run: |
+          curl -X POST \
+           -H "Authorization: Bearer ${{ secrets.ACCESS_TOKEN_GITHUB }}" \
+           -H "Accept: application/vnd.github.v3+json" \
+           -d "{\"ref\": \"main\", \"inputs\": {\"grid_url\": \"http://localhost:4444\", \"chrome_131_0\": true}}" \
+           https://api.github.com/repos/$SPOTIFY_TESTING_REPO_NAME/actions/workflows/$UI_TESTING_WORKFLOW_ID/dispatches
+          
+  CheckstyleTest:
+    name: CheckstyleTest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Run Tests
+        run: |
+          mvn checkstyle:check -Dcheckstyle.violationSeverity=warning
+      
+          
+          
+          
