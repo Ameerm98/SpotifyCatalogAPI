@@ -1,4 +1,4 @@
-name: SpotifyCatalogAPI tests
+name: DataSourceService Testing
 
 on:
   push:
