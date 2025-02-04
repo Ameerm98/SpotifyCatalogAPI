@@ -1,7 +1,10 @@
 package com.example.catalog.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Artist {
     private String id;
     private String name;
